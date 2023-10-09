@@ -1,0 +1,117 @@
+service: employee-crud
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: ap-south-1
+  environment:
+    DYNAMODB_TABLE_NAME: ${self:custom.employeeTableName}
+    SERIAL_NUMBER_TABLE_NAME: ${self:custom.serialNumberTableName} # Add a new environment variable for the serial number table
+custom:
+  employeeTableName: employees-table-${self:provider.stage}
+  serialNumberTableName: serial-number-table-${self:provider.stage} # Define the name of the serial number table
+plugins:
+  - serverless-iam-roles-per-function
+functions:
+  getEmployee:
+    handler: api.getEmployee
+    name: get-employee
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: employee/{empId}  # Define the path parameter
+          method: GET  # HTTP method
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:GetItem"
+        Resource: !GetAtt EmployeeTable.Arn 
+  createEmployee:
+    handler: api.createEmployee
+    name: create-employee
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: employee
+          method: POST
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:PutItem"
+        Resource: !GetAtt EmployeeTable.Arn
+      - Effect: "Allow" # Add a new IAM role statement to allow access to the serial number table
+        Action:
+          - "dynamodb:UpdateItem"
+        Resource: !GetAtt SerialNumberTable.Arn # Reference the serial number table
+  updateEmployee:
+    handler: api.updateEmployee
+    name: update-employee
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: employee/{empId}
+          method: PUT
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:UpdateItem"
+        Resource: !GetAtt EmployeeTable.Arn # Reference the employee table for update
+  getAllEmployees:
+    handler: api.getAllEmployees
+    name: get-all-employees
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: employees
+          method: GET
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:Scan"
+        Resource: !GetAtt EmployeeTable.Arn
+  deleteEmployee:
+    handler: api.deleteEmployee
+    name: delete-employee
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: employee/{empId}  # Define the path parameter
+          method: DELETE  # HTTP method
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:DeleteItem"
+        Resource: !GetAtt EmployeeTable.Arn # Reference the employee table for DeleteItem
+resources:
+  Resources:
+    EmployeeTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.employeeTableName}
+        AttributeDefinitions:
+          - AttributeName: empId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: empId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    SerialNumberTable:
+      Type: AWS::DynamoDB::Table # Define a new DynamoDB table for the serial number generation
+      Properties:
+        TableName: ${self:custom.serialNumberTableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
