@@ -1,4 +1,4 @@
-service: employee-crud
+service: employee-portal
 provider:
   name: aws
   runtime: nodejs18.x
