@@ -216,7 +216,7 @@ const updateEmployee = async (event) => {
     const { Item } = await client.send(new GetItemCommand(getItemParams));
 
     if (!Item) {
-      response.statusCode = 404; // Employee not found
+      response.statusCode = 404; // Employee Id not found
       response.body = JSON.stringify({
         message: `Employee with empId ${empId} not found`,
       });
