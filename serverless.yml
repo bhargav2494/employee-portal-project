@@ -44,7 +44,7 @@ functions:
       - Effect: "Allow" # Add a new IAM role statement to allow access to the serial number table
         Action:
           - "dynamodb:UpdateItem"
-        Resource: !GetAtt SerialNumberTable.Arn # Reference the serial number table
+        Resource: !GetAtt SerialNumberTable.Arn 
   updateEmployee:
     handler: api.updateEmployee
     name: update-employee
