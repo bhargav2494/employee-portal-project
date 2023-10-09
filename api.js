@@ -173,8 +173,6 @@ const createEmployee = async (event) => {
       }
     }
 
-
-
     const empId = await getNextSerialNumber();
     body.empId = empId.toString();
     const params = {
@@ -184,7 +182,7 @@ const createEmployee = async (event) => {
     const createResult = await client.send(new PutItemCommand(params));
     response.body = JSON.stringify({
       message: 'Successfully created employee.',
-      // createResult,
+      createResult,
       empId,
     });
   } catch (e) {
