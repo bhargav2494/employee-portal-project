@@ -100,7 +100,7 @@ const createEmployee = async (event) => {
 
     if (unknownAttributes.length > 0) {
       // Unknown attributes are present, return an error response
-      response.statusCode = 400; 
+      response.statusCode = 400; // You can choose an appropriate status code
       response.body = JSON.stringify({
         message: 'Unknown attributes in the request.',
         unknownAttributes,
